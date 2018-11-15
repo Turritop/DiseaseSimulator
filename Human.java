@@ -2,7 +2,7 @@ import java.awt.*;
 
 public class Human {
 
-    public String disease;
+    private String disease;
     public boolean alive;
     public boolean infected;
     public boolean immune;
@@ -49,8 +49,8 @@ public class Human {
         }
         //the chance of getting over an infection is an exponential random variable with given mean
         //F(x) = 1 - e^(-x/mean)
-        double mean = Main.diseaseMap.get(disease)[0];
-        double chanceToCure = 1 - Math.pow(Math.E, -1 * roundsInfected / mean); //will always be between 1 and 0
+        double meanDays = Main.diseaseMap.get(disease)[0];
+        double chanceToCure = 1 - Math.pow(Math.E, -1 * roundsInfected / (meanDays / 24)); //will always be between 1 and 0
         if (Math.random() < chanceToCure) {
             cure();
             return true;
@@ -59,13 +59,13 @@ public class Human {
     }
 
     public boolean attemptToKill() {
-        if (!infected) {
+        if (!infected || immune) {
             return false;
         }
         //the chance of dying from an infection is an exponential random variable with given mean
         //F(x) = 1 - e^(-x/mean)
-        double mean = Main.diseaseMap.get(disease)[1];
-        double chanceToKill = 1 - Math.pow(Math.E, -1 * roundsInfected / mean); //will always be between 1 and 0
+        double meanDays = Main.diseaseMap.get(disease)[1];
+        double chanceToKill = 1 - Math.pow(Math.E, -1 * roundsInfected / (meanDays / 24)); //will always be between 1 and 0
         if (Math.random() < chanceToKill) {
             kill();
             return true;
@@ -74,11 +74,11 @@ public class Human {
     }
 
     public boolean attemptToInfect() {
-        if (!infected) {
+        if (immune) {
             return false;
         }
         //each disease has a static chance to infect a neighboring person
-        double chanceToInfect = Main.diseaseMap.get(disease)[3];
+        double chanceToInfect = Main.diseaseMap.get(disease)[2];
         if (Math.random() < chanceToInfect) {
             infect();
             return true;

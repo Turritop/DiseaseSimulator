@@ -11,7 +11,7 @@ public class Main {
     private static final int NUM_HUMANS_HEIGHT = 15;
 
     public static Map<String, double[]> diseaseMap;
-    //the array goes: meanTimeUntilCure, meanTimeUntilDeath, infectionRate
+    //the array goes: meanDaysUntilCure, meanDaysUntilDeath, infectionRate
     public static String diseaseChoice;
     private static double waitTimer = 100;
 
@@ -19,8 +19,12 @@ public class Main {
         System.out.println("Welcome to the Disease Simulator\n");
         Scanner sc = new Scanner(System.in);
         diseaseMap = new HashMap<>();
+        run(new DrawingPanel(DRAWING_PANEL_WIDTH, DRAWING_PANEL_HEIGHT), sc);
+    }
+
+    private static void run(DrawingPanel drawingPanel, Scanner sc) {
         designDisease(sc);
-        runSimulation(sc);
+        runSimulation(drawingPanel, sc);
     }
 
     public static void designDisease(Scanner sc) {
@@ -73,7 +77,7 @@ public class Main {
         String[] key1 = {"Flu", "Plague", "Tuberculosis", "Ebola"};
         //meanTimeUntilCure, meanTimeUntilDeath, infectionRate
         //sources: https://www.cdc.gov/flu/professionals/acip/2018-2019/background/background-epidemiology.htm
-        double[] fluValues = {7 * 24, 14 * 24, .08};
+        double[] fluValues = {5 * 24, 14 * 24, .08};
         diseaseMap.put("Flu", fluValues);
         //sources: http://www.who.int/csr/resources/publications/plague/whocdscsredc992a.pdf  https://en.wikipedia.org/wiki/Bubonic_plague
         double[] plagueValues = {30, 24, .40};
@@ -86,11 +90,10 @@ public class Main {
         diseaseMap.put("Ebola", ebolaValues);
     }
 
-    public static void runSimulation(Scanner sc) {
+    public static void runSimulation(DrawingPanel dp, Scanner sc) {
         Human[][] population = new Human[NUM_HUMANS_WIDTH + 2][NUM_HUMANS_HEIGHT + 2]; //have a buffer around the actual data to avoid null-pointer exceptions
         populate(population);
 
-        DrawingPanel dp = new DrawingPanel(DRAWING_PANEL_WIDTH, DRAWING_PANEL_HEIGHT);
         Graphics g = dp.getGraphics();
 
         boolean keepGoing = true;
@@ -106,10 +109,10 @@ public class Main {
                         keepGoing = true;
                         currentHuman.roundsInfected++; // need to keep track of this
                         infectNeighbors(r, c, population);
-                        currentHuman.attemptToCure();
                         if (currentHuman.attemptToKill()) {
                             killCounter++;
                         }
+                        currentHuman.attemptToCure();
                     }
 
                 }
@@ -125,10 +128,9 @@ public class Main {
         if (sc.next().toLowerCase().equals("y")) {
             System.out.println("Would you like to use the same disease? Y/N");
             if (sc.next().toLowerCase().equals("y")) {
-                runSimulation(sc);
+                runSimulation(dp, sc);
             } else {
-                designDisease(sc);
-                runSimulation(sc);
+                run(dp, sc);
             }
         }
     }
@@ -141,6 +143,10 @@ public class Main {
                 population[r][c] = new Human(diseaseChoice);
                 if (r == patientZeroX && c == patientZeroY) {
                     population[r][c].infect();
+                }
+                if (r == 0 || r == population.length - 1 || c == 0 || c == population[0].length - 1) {
+                    //make the outer, invisible edge immune so they don't affect the rest of the population or counters
+                    population[r][c].immune = true;
                 }
             }
         }
