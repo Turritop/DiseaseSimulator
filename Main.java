@@ -24,6 +24,7 @@ public class Main {
         DrawingPanel dp = new DrawingPanel(DRAWING_PANEL_WIDTH, DRAWING_PANEL_HEIGHT);
         designDisease(sc);
         runSimulation(dp, sc);
+        sc.close();
     }
 
     //takes in a scanner and has the user either design their own disease or choose from a list of existing ones
@@ -127,7 +128,7 @@ public class Main {
             for (int r = 1; r <= NUM_HUMANS_WIDTH; r++) {
                 for (int c = 1; c <= NUM_HUMANS_HEIGHT; c++) {
                     Human currentHuman = population[r][c]; //don't call on humans in buffer
-                    if (currentHuman.infected) { //only keep going when at least one person is infected
+                    if (currentHuman.infected && currentHuman.alive) { //only keep going when at least one person is infected
                         keepGoing = true;
                         currentHuman.roundsInfected++; // need to keep track of this for exponential random variables
                         infectNeighbors(r, c, population); //attempt to infect our 8 neighbors
@@ -152,13 +153,14 @@ public class Main {
         if (sc.next().toLowerCase().equals("y")) {
             System.out.println("Would you like to use the same disease? Y/N");
             if (sc.next().toLowerCase().equals("y")) {
+                dp.clear();
                 runSimulation(dp, sc);
             } else {
+                dp.clear();
                 designDisease(sc);
                 runSimulation(dp, sc);
             }
         }
-        sc.close();
     }
 
     //creates all of our humans, choosing one at random to be patient zero
@@ -206,7 +208,7 @@ public class Main {
                 //give the human a black outline
                 g.setColor(Color.black);
                 g.drawOval(x, y, humanWidth, humanHeight);
-                
+
                 y += humanHeight;
             }
             x += humanWidth;

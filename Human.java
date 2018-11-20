@@ -3,7 +3,7 @@ import java.awt.*;
 public class Human {
 
     private String disease;
-    private boolean alive;
+    public boolean alive;
     public boolean infected;
     public boolean immune;
     public int roundsInfected;
@@ -37,6 +37,7 @@ public class Human {
 
     private void kill() {
         alive = false;
+        infected = false;
     }
 
     private void cure() {
@@ -65,7 +66,7 @@ public class Human {
     //the chance of dying from an infection is an exponential random variable with given mean
     //F(x) = 1 - e^(-x/mean) where x is the number of rounds/hours this human has been sick
     public boolean attemptToKill() {
-        if (!infected || immune) {
+        if (!infected || immune || !alive) {
             return false;
         }
         double meanDays = Main.diseaseMap.get(disease)[1];
